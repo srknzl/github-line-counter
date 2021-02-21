@@ -33,14 +33,9 @@ app.get('*', (req, res, next) => {
                 'User-Agent': 'srknzl/github-line-counter',
             },
         }, (response) => {
-            console.log(response.statusCode);
-            response.on('data', (data) => {
-                console.log(data.toString());
-            });
             if (response.statusCode == 404) {
                 branch = 'main';
             }
-            console.log(branch);
 
             const fileUUID = uuid.v4();
 
