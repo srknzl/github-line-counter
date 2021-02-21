@@ -27,13 +27,16 @@ app.get('*', (req, res, next) => {
     const user = words[0];
     const repo = words[1];
     let branch = words.length == 3 ? words[2] : 'master';
+    // console.log(words);
     try {
-        https.get(`https://api.github.com/repositories/${user}/${repo}/branches/${branch}`, {
+        // console.log(`https://api.github.com/repos/${user}/${repo}/branches/${branch}`);
+        https.get(`https://api.github.com/repos/${user}/${repo}/branches/${branch}`, {
             headers: {
                 'User-Agent': 'srknzl/github-line-counter',
             },
         }, (response) => {
             if (response.statusCode == 404) {
+                console.log('asd');
                 branch = 'main';
             }
 
