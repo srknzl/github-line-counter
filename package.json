@@ -1,0 +1,33 @@
+{
+  "name": "github-line-counter",
+  "version": "1.0.0",
+  "description": "An application that counts lines of code in a git repo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srknzl/github-line-counter.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/srknzl/github-line-counter/issues"
+  },
+  "homepage": "https://github.com/srknzl/github-line-counter#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cloc": "^2.7.0",
+    "express": "^4.17.1",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.20.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1"
+  }
+}
