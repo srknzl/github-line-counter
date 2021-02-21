@@ -73,10 +73,16 @@ app.get('*', (req, res, next) => {
             try {
                 file.on('finish', () => {
                     const unzipProcess = spawn('unzip', [`${fileUUID}.zip`, '-d', '/tmp'], {
-                        'stdio': 'ignore',
+                        'stdio': 'pipe',
                     });
                     unzipProcess.on('exit', (code, signal) => {
                         if (code != 0) {
+                            let chunk;
+                            unzipProcess.stderr.on('readable', () => {
+                                while (null !== (chunk = unzipProcess.stderr.read())) {
+                                    console.log(chunk.toString());
+                                }
+                            });
                             return res.status(500).json({
                                 'status': 'Could not get code',
                             });
