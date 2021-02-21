@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const uuid = require('uuid');
-const { spawn } = require('child_process');
+const {spawn} = require('child_process');
 const https = require('https');
 const fs = require('fs');
 
@@ -10,16 +10,20 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT ? process.env.PORT : 3000;
 
-app.post('/count-line', (req, res, next) => {
-    if (!req.body.user || !req.body.repo) {
+app.get('*', (req, res, next) => {
+    const originalUrl = req.originalUrl;
+    const splitted = originalUrl.split('/');
+    if (splitted.length < 3 || splitted.length > 4) {
         return res.status(422).json({
-            'status': 'I need url parameter',
+            'status': 'Invalid path',
         });
     }
-    const user = req.body.user;
-    const repo = req.body.repo;
-    const branch = req.body.branch;
+    const user = splitted[1];
+    const repo = splitted[2];
+    const branch = splitted.length == 4 ? splitted[3] : 'master';
     const fileUUID = uuid.v4();
+
+    console.log(user, repo, branch);
 
     const file = fs.createWriteStream(`/tmp/${fileUUID}.zip`);
     try {
@@ -60,7 +64,7 @@ app.post('/count-line', (req, res, next) => {
                         'status': 'Could not get code',
                     });
                 } else {
-                    const clocProcess = spawn('node_modules/.bin/cloc', [`/tmp/${repo}-${branch}`], {
+                    const clocProcess = spawn('node_modules/.bin/cloc', ['--json', `/tmp/${repo}-${branch}`], {
                         'stdio': ['ignore', 'pipe', 'pipe'],
                     });
                     clocProcess.on('exit', (code, _) => {
@@ -80,6 +84,7 @@ app.post('/count-line', (req, res, next) => {
                             });
                         } else {
                             let chunk;
+                            res.contentType('json');
                             clocProcess.stdout.on('readable', () => {
                                 while (null !== (chunk = clocProcess.stdout.read())) {
                                     res.write(chunk);
