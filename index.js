@@ -77,6 +77,8 @@ app.get('*', (req, res, next) => {
                             '--quiet',
                             '--hide-rate',
                             '--yaml',
+                            '--processes=8',
+                            '--unix',
                             `${repo}-${branch}`,
                         ], {
                             'stdio': ['ignore', 'pipe', 'pipe'],
