@@ -40,7 +40,7 @@ app.get('*', (req, res, next) => {
             }
 
             const fileUUID = uuid.v4();
-
+            // console.log('created file');
             const file = fs.createWriteStream(`${fileUUID}.zip`);
             try {
                 https.get(`https://codeload.github.com/${user}/${repo}/zip/${branch}`, (response) => {
@@ -71,24 +71,13 @@ app.get('*', (req, res, next) => {
 
             try {
                 file.on('finish', () => {
-                    try {
-                        fs.rmdirSync(`${repo}-${branch}`, {
-                            recursive: true,
-                        });
-                    } catch (error) {
-                        // no op
-                    }
-                    const unzipProcess = spawn('unzip', [`${fileUUID}.zip`, '-d', '/tmp'], {
-                        'stdio': 'pipe',
+                    // console.log('finish');
+                    const unzipProcess = spawn('unzip', ['-o', `${fileUUID}.zip`], {
+                        'stdio': 'ignore',
                     });
                     unzipProcess.on('exit', (code, signal) => {
+                        // console.log('unzip exit');
                         if (code != 0) {
-                            let chunk;
-                            unzipProcess.stderr.on('readable', () => {
-                                while (null !== (chunk = unzipProcess.stderr.read())) {
-                                    console.log(chunk.toString());
-                                }
-                            });
                             return res.status(500).json({
                                 'status': 'Could not get code',
                             });
@@ -97,11 +86,12 @@ app.get('*', (req, res, next) => {
                                 '--quiet',
                                 '--hide-rate',
                                 '--yaml',
-                                `${repo}-${branch}`,
+                                `${repo}-${branch}`
                             ], {
                                 'stdio': ['ignore', 'pipe', 'pipe'],
                             });
                             clocProcess.on('exit', (code, _) => {
+                                // console.log('clocProcess exit');
                                 if (code != 0) {
                                     let chunk;
                                     clocProcess.stderr.on('readable', () => {
@@ -110,10 +100,14 @@ app.get('*', (req, res, next) => {
                                         }
                                     });
                                     clocProcess.stderr.on('end', () => {
-                                        fs.unlinkSync(`${fileUUID}.zip`);
-                                        fs.rmdirSync(`${repo}-${branch}`, {
-                                            recursive: true,
-                                        });
+                                        try {
+                                            fs.unlinkSync(`${fileUUID}.zip`);
+                                            fs.rmdirSync(`${repo}-${branch}`, {
+                                                recursive: true,
+                                            });
+                                        } catch (error) {
+                                            // no op
+                                        }
                                         res.status(500).end();
                                     });
                                 } else {
@@ -125,10 +119,14 @@ app.get('*', (req, res, next) => {
                                         }
                                     });
                                     clocProcess.stdout.on('end', () => {
-                                        fs.unlinkSync(`${fileUUID}.zip`);
-                                        fs.rmdirSync(`${repo}-${branch}`, {
-                                            recursive: true,
-                                        });
+                                        try {
+                                            fs.unlinkSync(`${fileUUID}.zip`);
+                                            fs.rmdirSync(`${repo}-${branch}`, {
+                                                recursive: true,
+                                            });
+                                        } catch (error) {
+                                            // no op
+                                        }
                                         res.status(200).end();
                                     });
                                 }
@@ -137,10 +135,14 @@ app.get('*', (req, res, next) => {
                     });
                 });
             } catch (error) {
-                fs.unlinkSync(`${fileUUID}.zip`);
-                fs.rmdirSync(`${repo}-${branch}`, {
-                    recursive: true,
-                });
+                try {
+                    fs.unlinkSync(`${fileUUID}.zip`);
+                    fs.rmdirSync(`${repo}-${branch}`, {
+                        recursive: true,
+                    });
+                } catch (error) {
+                    // no op
+                }
                 res.status(500).json({
                     'status': error.toString(),
                 });
