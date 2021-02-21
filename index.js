@@ -13,17 +13,21 @@ const PORT = process.env.PORT ? process.env.PORT : 3000;
 app.get('*', (req, res, next) => {
     const originalUrl = req.originalUrl;
     const splitted = originalUrl.split('/');
-    if (splitted.length < 3 || splitted.length > 4) {
+    const words = [];
+    for (const word of splitted) {
+        if (word) {
+            words.push(word);
+        }
+    }
+    if (words.length < 2 || words.length > 3) {
         return res.status(422).json({
             'status': 'Invalid path',
         });
     }
-    const user = splitted[1];
-    const repo = splitted[2];
-    const branch = splitted.length == 4 ? splitted[3] : 'master';
+    const user = words[0];
+    const repo = words[1];
+    const branch = words.length == 3 ? words[2] : 'master';
     const fileUUID = uuid.v4();
-
-    console.log(user, repo, branch);
 
     const file = fs.createWriteStream(`/tmp/${fileUUID}.zip`);
     try {
@@ -64,7 +68,11 @@ app.get('*', (req, res, next) => {
                         'status': 'Could not get code',
                     });
                 } else {
-                    const clocProcess = spawn('node_modules/.bin/cloc', ['--json', `/tmp/${repo}-${branch}`], {
+                    const clocProcess = spawn('node_modules/.bin/cloc', [
+                        '--quiet',
+                        '--hide-rate',
+                        `/tmp/${repo}-${branch}`,
+                    ], {
                         'stdio': ['ignore', 'pipe', 'pipe'],
                     });
                     clocProcess.on('exit', (code, _) => {
@@ -84,7 +92,7 @@ app.get('*', (req, res, next) => {
                             });
                         } else {
                             let chunk;
-                            res.contentType('json');
+                            res.write('Powered by: ');
                             clocProcess.stdout.on('readable', () => {
                                 while (null !== (chunk = clocProcess.stdout.read())) {
                                     res.write(chunk);
