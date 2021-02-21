@@ -36,7 +36,6 @@ app.get('*', (req, res, next) => {
             },
         }, (response) => {
             if (response.statusCode == 404) {
-                console.log('asd');
                 branch = 'main';
             }
 
@@ -72,6 +71,13 @@ app.get('*', (req, res, next) => {
 
             try {
                 file.on('finish', () => {
+                    try {
+                        fs.rmdirSync(`${repo}-${branch}`, {
+                            recursive: true,
+                        });
+                    } catch (error) {
+                        // no op
+                    }
                     const unzipProcess = spawn('unzip', [`${fileUUID}.zip`, '-d', '/tmp'], {
                         'stdio': 'pipe',
                     });
