@@ -84,6 +84,10 @@ app.get('*', (req, res, next) => {
                             const clocProcess = spawn('node_modules/.bin/cloc', [
                                 '--quiet',
                                 '--hide-rate',
+                                '--yaml',
+                                '--processes',
+                                '8',
+                                '--unix',
                                 `/tmp/${repo}-${branch}`,
                             ], {
                                 'stdio': ['ignore', 'pipe', 'pipe'],
