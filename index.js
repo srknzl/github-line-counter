@@ -42,12 +42,12 @@ app.get('*', (req, res, next) => {
 
             const fileUUID = uuid.v4();
 
-            const file = fs.createWriteStream(`/tmp/${fileUUID}.zip`);
+            const file = fs.createWriteStream(`${fileUUID}.zip`);
             try {
                 https.get(`https://codeload.github.com/${user}/${repo}/zip/${branch}`, (response) => {
                     if (response.statusCode != 200) {
                         file.destroy();
-                        fs.unlinkSync(`/tmp/${fileUUID}.zip`);
+                        fs.unlinkSync(`${fileUUID}.zip`);
                         return res.status(404).json({
                             'status': 'Not found',
                         });
@@ -57,14 +57,14 @@ app.get('*', (req, res, next) => {
                 })
                     .on('error', (err) => {
                         file.destroy();
-                        fs.unlinkSync(`/tmp/${fileUUID}.zip`);
+                        fs.unlinkSync(`${fileUUID}.zip`);
                         return res.status(500).json({
                             'status': 'Could not download repo',
                         });
                     });
             } catch (error) {
                 file.destroy();
-                fs.unlinkSync(`/tmp/${fileUUID}.zip`);
+                fs.unlinkSync(`${fileUUID}.zip`);
                 return res.status(500).json({
                     'status': 'Could not download repo',
                 });
@@ -72,7 +72,7 @@ app.get('*', (req, res, next) => {
 
             try {
                 file.on('finish', () => {
-                    const unzipProcess = spawn('unzip', [`/tmp/${fileUUID}.zip`, '-d', '/tmp'], {
+                    const unzipProcess = spawn('unzip', [`${fileUUID}.zip`, '-d', '/tmp'], {
                         'stdio': 'ignore',
                     });
                     unzipProcess.on('exit', (code, signal) => {
@@ -85,10 +85,7 @@ app.get('*', (req, res, next) => {
                                 '--quiet',
                                 '--hide-rate',
                                 '--yaml',
-                                '--processes',
-                                '8',
-                                '--unix',
-                                `/tmp/${repo}-${branch}`,
+                                `${repo}-${branch}`,
                             ], {
                                 'stdio': ['ignore', 'pipe', 'pipe'],
                             });
@@ -101,8 +98,8 @@ app.get('*', (req, res, next) => {
                                         }
                                     });
                                     clocProcess.stderr.on('end', () => {
-                                        fs.unlinkSync(`/tmp/${fileUUID}.zip`);
-                                        fs.rmdirSync(`/tmp/${repo}-${branch}`, {
+                                        fs.unlinkSync(`${fileUUID}.zip`);
+                                        fs.rmdirSync(`${repo}-${branch}`, {
                                             recursive: true,
                                         });
                                         res.status(500).end();
@@ -116,8 +113,8 @@ app.get('*', (req, res, next) => {
                                         }
                                     });
                                     clocProcess.stdout.on('end', () => {
-                                        fs.unlinkSync(`/tmp/${fileUUID}.zip`);
-                                        fs.rmdirSync(`/tmp/${repo}-${branch}`, {
+                                        fs.unlinkSync(`${fileUUID}.zip`);
+                                        fs.rmdirSync(`${repo}-${branch}`, {
                                             recursive: true,
                                         });
                                         res.status(200).end();
@@ -128,8 +125,8 @@ app.get('*', (req, res, next) => {
                     });
                 });
             } catch (error) {
-                fs.unlinkSync(`/tmp/${fileUUID}.zip`);
-                fs.rmdirSync(`/tmp/${repo}-${branch}`, {
+                fs.unlinkSync(`${fileUUID}.zip`);
+                fs.rmdirSync(`${repo}-${branch}`, {
                     recursive: true,
                 });
                 res.status(500).json({
