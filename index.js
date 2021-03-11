@@ -104,7 +104,7 @@ app.get('*', (req, res, next) => {
                                 });
                             } else {
                                 let chunk;
-                                res.write('Powered by: ');
+                                res.setHeader('Content-Type', 'text/html');
                                 clocProcess.stdout.on('readable', () => {
                                     while (null !== (chunk = clocProcess.stdout.read())) {
                                         res.write(chunk);
