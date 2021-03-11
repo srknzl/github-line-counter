@@ -73,11 +73,11 @@ app.get('*', (req, res, next) => {
                             'status': 'Could not get code',
                         });
                     } else {
-                        const clocProcess = spawn('node_modules/.bin/cloc', [
-                            '--quiet',
-                            '--hide-rate',
-                            '--yaml',
-                            '--unix',
+                        const clocProcess = spawn('./scc', [
+                            '-f',
+                            'html',
+                            '-s',
+                            'code',
                             `${repo}-${branch}`,
                         ], {
                             'stdio': ['ignore', 'pipe', 'pipe'],
